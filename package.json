@@ -2,7 +2,11 @@
   "name": "untitled",
   "version": "1.0.0",
   "description": "",
+<<<<<<< HEAD
   "main": "Frontend/app.js",
+=======
+  "main": "index.js",
+>>>>>>> 6f35a6cf9fb33c951c23641fe0a9be967a8b7512
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
