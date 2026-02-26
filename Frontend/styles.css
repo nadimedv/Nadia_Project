@@ -1,59 +1,104 @@
+
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    background: #f5f5f5;
     margin: 0;
+    min-height: 100vh;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+
+    background:
+            radial-gradient(circle at 20% 30%, rgba(255,255,255,0.7) 0%, transparent 40%),
+            radial-gradient(circle at 70% 60%, rgba(255,255,255,0.5) 0%, transparent 35%),
+            radial-gradient(circle at 40% 80%, rgba(255,255,255,0.6) 0%, transparent 30%),
+            linear-gradient(135deg, #c9f3e7, #a8e6d1);
 }
 .container {
     max-width: 900px;
     margin: 0 auto;
     padding: 16px;
 }
-section {
+
+header {
+    margin-bottom: 16px;
+}
+
+main {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+#create-section,
+#list-section {
+    flex: 1;
     background: #fff;
     padding: 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
-    margin-bottom: 16px;
 }
+
+@media (max-width: 800px) {
+    main {
+        flex-direction: column;
+    }
+}
+
 .field {
     margin-bottom: 12px;
 }
+
 .field label {
     display: block;
     margin-bottom: 4px;
 }
-.field input,
-.field select,
-.field textarea {
+
+.field input {
     width: 100%;
     padding: 8px;
     border: 1px solid #bbb;
     border-radius: 4px;
-    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 18px;
 }
+
 .invalid {
     border-color: #c00;
 }
+
 .error-text {
     margin: 4px 0 0;
-    font-size: 12px;
+    font-size: 14px;
     color: #c00;
     min-height: 14px;
 }
+
 .buttons {
     margin-top: 12px;
     display: flex;
     gap: 8px;
 }
+
+button {
+    padding: 8px 12px;
+    border: 1px solid #888;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
 }
+
 th, td {
     border: 1px solid #ccc;
     padding: 8px;
 }
+
 th {
     background: #eee;
+    text-align: left;
 }
