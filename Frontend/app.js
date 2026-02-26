@@ -1,3 +1,4 @@
+//На рівень Добре
 // STATE
 let shifts = [];
 let nextId = 1;
