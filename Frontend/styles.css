@@ -1,7 +1,4 @@
-/* Завдання на рівень "Добре" */
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
@@ -15,15 +12,14 @@ body {
             radial-gradient(circle at 40% 80%, rgba(255,255,255,0.6) 0%, transparent 30%),
             linear-gradient(135deg, #c9f3e7, #a8e6d1);
 }
+
 .container {
-    max-width: 900px;
+    max-width: 980px;
     margin: 0 auto;
     padding: 16px;
 }
 
-header {
-    margin-bottom: 16px;
-}
+header { margin-bottom: 16px; }
 
 main {
     display: flex;
@@ -41,32 +37,28 @@ main {
 }
 
 @media (max-width: 800px) {
-    main {
-        flex-direction: column;
-    }
+    main { flex-direction: column; }
 }
 
-.field {
-    margin-bottom: 12px;
-}
+.field { margin-bottom: 12px; }
 
 .field label {
     display: block;
     margin-bottom: 4px;
 }
 
-.field input {
+.field input,
+.field select {
     width: 100%;
     padding: 8px;
     border: 1px solid #bbb;
     border-radius: 4px;
+
     font-family: inherit;
     font-size: 18px;
 }
 
-.invalid {
-    border-color: #c00;
-}
+.invalid { border-color: #c00; }
 
 .error-text {
     margin: 4px 0 0;
@@ -79,6 +71,7 @@ main {
     margin-top: 12px;
     display: flex;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 button {
@@ -86,7 +79,43 @@ button {
     border: 1px solid #888;
     border-radius: 4px;
     cursor: pointer;
+    font-family: inherit;
 }
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.tool {
+    flex: 1;
+    min-width: 180px;
+}
+
+.tool label {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.tool input,
+.tool select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 18px;
+}
+
+.hidden { display: none; }
+.muted { margin-top: 12px; opacity: 0.75; }
 
 table {
     width: 100%;
