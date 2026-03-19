@@ -1,43 +1,42 @@
 import type { Request, Response, NextFunction } from "express";
 import { swapRequestService } from "../services/swap-request.service.js";
-import { createSwapRequestSchema, updateSwapRequestSchema } from "../schemas/swap-request.schema.js";
 
 export const swapRequestController = {
-    getAll(req: Request, res: Response) {
+    getAll(req: Request, res: Response): void {
         const items = swapRequestService.getAll();
         res.json({ items });
     },
-    getById(req: Request, res: Response, next: NextFunction) {
+
+    getById(req: Request, res: Response, next: NextFunction): void {
         try {
             const id = Number(req.params.id);
-            res.json(swapRequestService.getById(id));
+            const item = swapRequestService.getById(id);
+            res.json({ item });
         } catch (e) {
             next(e);
         }
     },
 
-    create(req: Request, res: Response, next: NextFunction) {
+    create(req: Request, res: Response, next: NextFunction): void {
         try {
-            const dto = createSwapRequestSchema.parse(req.body);
-            const item = swapRequestService.create(dto);
-            res.status(201).json(item);
+            const item = swapRequestService.create(req.body);
+            res.status(201).json({ item });
         } catch (e) {
             next(e);
         }
     },
 
-    update(req: Request, res: Response, next: NextFunction) {
+    update(req: Request, res: Response, next: NextFunction): void {
         try {
             const id = Number(req.params.id);
-            const dto = updateSwapRequestSchema.parse(req.body);
-            const item = swapRequestService.update(id, dto);
-            res.json(item);
+            const item = swapRequestService.update(id, req.body);
+            res.json({ item });
         } catch (e) {
             next(e);
         }
     },
 
-    delete(req: Request, res: Response, next: NextFunction) {
+    delete(req: Request, res: Response, next: NextFunction): void {
         try {
             const id = Number(req.params.id);
             swapRequestService.delete(id);

@@ -1,44 +1,42 @@
 import type { Request, Response, NextFunction } from "express";
 import { scheduleService } from "../services/schedule.service.js";
-import { createScheduleSchema, updateScheduleSchema } from "../schemas/schedule.schema.js";
 
 export const scheduleController = {
-    getAll(req: Request, res: Response) {
+    getAll(req: Request, res: Response): void {
         const items = scheduleService.getAll();
         res.json({ items });
     },
 
-    getById(req: Request, res: Response, next: NextFunction) {
+    getById(req: Request, res: Response, next: NextFunction): void {
         try {
             const id = Number(req.params.id);
-            res.json(scheduleService.getById(id));
+            const item = scheduleService.getById(id);
+            res.json({ item });
         } catch (e) {
             next(e);
         }
     },
 
-    create(req: Request, res: Response, next: NextFunction) {
+    create(req: Request, res: Response, next: NextFunction): void {
         try {
-            const dto = createScheduleSchema.parse(req.body);
-            const item = scheduleService.create(dto);
-            res.status(201).json(item);
+            const item = scheduleService.create(req.body);
+            res.status(201).json({ item });
         } catch (e) {
             next(e);
         }
     },
 
-    update(req: Request, res: Response, next: NextFunction) {
+    update(req: Request, res: Response, next: NextFunction): void {
         try {
             const id = Number(req.params.id);
-            const dto = updateScheduleSchema.parse(req.body);
-            const item = scheduleService.update(id, dto);
-            res.json(item);
+            const item = scheduleService.update(id, req.body);
+            res.json({ item });
         } catch (e) {
             next(e);
         }
     },
 
-    delete(req: Request, res: Response, next: NextFunction) {
+    delete(req: Request, res: Response, next: NextFunction): void {
         try {
             const id = Number(req.params.id);
             scheduleService.delete(id);

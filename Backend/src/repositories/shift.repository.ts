@@ -45,6 +45,11 @@ export const shiftRepository = {
     getById(id: number): Shift | undefined {
         return shifts.find(s => s.id === id);
     },
+    findDuplicate(date: string, timeSlot: string, userName: string): Shift | undefined {
+        return shifts.find(
+            (s) => s.date === date && s.timeSlot === timeSlot && s.userName === userName
+        );
+    },
 
     create(dto: CreateShiftDto): Shift {
         const newShift: Shift = {

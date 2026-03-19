@@ -1,44 +1,42 @@
 import type { Request, Response, NextFunction } from "express";
 import { userService } from "../services/user.service.js";
-import { createUserSchema, updateUserSchema } from "../schemas/user.schema.js";
 
 export const userController = {
-    getAll(req: Request, res: Response) {
+    getAll(req: Request, res: Response): void {
         const items = userService.getAll();
         res.json({ items });
     },
 
-    getById(req: Request, res: Response, next: NextFunction) {
+    getById(req: Request, res: Response, next: NextFunction): void {
         try {
             const id = Number(req.params.id);
-            res.json(userService.getById(id));
+            const item = userService.getById(id);
+            res.json({ item });
         } catch (e) {
             next(e);
         }
     },
 
-    create(req: Request, res: Response, next: NextFunction) {
+    create(req: Request, res: Response, next: NextFunction): void {
         try {
-            const dto = createUserSchema.parse(req.body);
-            const user = userService.create(dto);
-            res.status(201).json(user);
+            const item = userService.create(req.body);
+            res.status(201).json({ item });
         } catch (e) {
             next(e);
         }
     },
 
-    update(req: Request, res: Response, next: NextFunction) {
+    update(req: Request, res: Response, next: NextFunction): void {
         try {
             const id = Number(req.params.id);
-            const dto = updateUserSchema.parse(req.body);
-            const user = userService.update(id, dto);
-            res.json(user);
+            const item = userService.update(id, req.body);
+            res.json({ item });
         } catch (e) {
             next(e);
         }
     },
 
-    delete(req: Request, res: Response, next: NextFunction) {
+    delete(req: Request, res: Response, next: NextFunction): void {
         try {
             const id = Number(req.params.id);
             userService.delete(id);

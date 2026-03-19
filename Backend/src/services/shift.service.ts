@@ -16,14 +16,42 @@ export const shiftService = {
     },
 
     create(dto: CreateShiftDto) {
+        const duplicate = shiftRepository.findDuplicate(dto.date, dto.timeSlot, dto.userName);
+        if (duplicate) {
+            throw new ApiError(
+                409,
+                "SHIFT_ALREADY_EXISTS",
+                "Shift with the same date, time slot and user already exists"
+            );
+        }
+
         return shiftRepository.create(dto);
     },
 
     update(id: number, dto: UpdateShiftDto) {
+        const current = shiftRepository.getById(id);
+        if (!current) {
+            throw new ApiError(404, "SHIFT_NOT_FOUND", "Shift not found");
+        }
+
+        const date = dto.date ?? current.date;
+        const timeSlot = dto.timeSlot ?? current.timeSlot;
+        const userName = dto.userName ?? current.userName;
+
+        const duplicate = shiftRepository.findDuplicate(date, timeSlot, userName);
+        if (duplicate && duplicate.id !== id) {
+            throw new ApiError(
+                409,
+                "SHIFT_ALREADY_EXISTS",
+                "Shift with the same date, time slot and user already exists"
+            );
+        }
+
         const updated = shiftRepository.update(id, dto);
         if (!updated) {
             throw new ApiError(404, "SHIFT_NOT_FOUND", "Shift not found");
         }
+
         return updated;
     },
 

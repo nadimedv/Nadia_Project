@@ -102,3 +102,60 @@ GET /api/shifts?page=1&pageSize=2
 
 
 
+## Приклади запитів (curl)
+
+### Health check
+```bash
+curl -i http://localhost:3000/api/health
+````
+
+### Отримати всіх users
+
+```bash
+curl -i http://localhost:3000/api/users
+```
+
+### Створити user
+
+```bash
+curl -i -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d "{\"name\":\"Nadia\",\"email\":\"nadia@gmail.com\"}"
+```
+
+### Отримати всі shifts
+
+```bash
+curl -i http://localhost:3000/api/shifts
+```
+
+### Створити shift
+
+```bash
+curl -i -X POST http://localhost:3000/api/shifts \
+  -H "Content-Type: application/json" \
+  -d "{\"date\":\"2026-03-20\",\"timeSlot\":\"morning\",\"userName\":\"Nadia\",\"status\":\"planned\"}"
+```
+
+### Фільтрація shifts
+
+```bash
+curl -i "http://localhost:3000/api/shifts?status=planned"
+```
+
+### Сортування shifts
+
+```bash
+curl -i "http://localhost:3000/api/shifts?sortBy=date&order=desc"
+```
+
+### Пагінація shifts
+
+```bash
+curl -i "http://localhost:3000/api/shifts?page=1&pageSize=2"
+```
+
+
+
+
+

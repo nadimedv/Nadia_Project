@@ -11,7 +11,9 @@ export const userRepository = {
     getById(id: number): User | undefined {
         return users.find(u => u.id === id);
     },
-
+    findByEmail(email: string) {
+        return users.find((u) => u.email === email);
+    },
     create(dto: CreateUserDto): User {
         const newUser: User = {
             id: nextId++,
