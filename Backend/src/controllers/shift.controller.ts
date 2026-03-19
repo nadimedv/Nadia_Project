@@ -3,8 +3,8 @@ import { shiftService } from "../services/shift.service.js";
 import { createShiftSchema, updateShiftSchema } from "../schemas/shift.schema.js";
 
 export const shiftController = {
-    getAll(req: Request, res: Response) {
-        res.json(shiftService.getAll());
+    getAll(req, res) {
+        res.json(shiftService.getAll(req.query));
     },
 
     getById(req: Request, res: Response, next: NextFunction) {

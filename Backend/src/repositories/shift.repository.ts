@@ -4,9 +4,30 @@ let shifts: Shift[] = [];
 let nextId = 1;
 
 export const shiftRepository = {
-    getAll(): Shift[] {
-        return shifts;
-    },
+    getAll(query: any): Shift[] {
+        let result = [...shifts];
+
+        // 🔍 ФІЛЬТР
+        if (query.status) {
+            result = result.filter(s => s.status === query.status);
+        }
+
+        if (query.userName) {
+            result = result.filter(s => s.userName === query.userName);
+        }
+
+        // 🔽 СОРТУВАННЯ
+        if (query.sortBy) {
+            result.sort((a, b) => {
+                if (query.order === "desc") {
+                    return a[query.sortBy] < b[query.sortBy] ? 1 : -1;
+                }
+                return a[query.sortBy] > b[query.sortBy] ? 1 : -1;
+            });
+        }
+
+        return result;
+    } ,
 
     getById(id: number): Shift | undefined {
         return shifts.find(s => s.id === id);

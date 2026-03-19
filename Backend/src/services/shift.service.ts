@@ -2,8 +2,8 @@ import { shiftRepository } from "../repositories/shift.repository.js";
 import { ApiError } from "../errors/api-error.js";
 
 export const shiftService = {
-    getAll() {
-        return shiftRepository.getAll();
+    getAll(query: any) {
+        return shiftRepository.getAll(query);
     },
 
     getById(id: number) {
