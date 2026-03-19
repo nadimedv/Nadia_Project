@@ -89,6 +89,16 @@ PUT /api/shifts/:id
 ### Видалити зміну
 
 DELETE /api/shifts/:id
+## Додаткові можливості
+
+### Фільтрація
+GET /api/shifts?status=planned
+
+### Сортування
+GET /api/shifts?sortBy=date&order=desc
+
+### Пагінація
+GET /api/shifts?page=1&pageSize=2
 
 
 

@@ -1,33 +1,46 @@
-import { Shift, CreateShiftDto, UpdateShiftDto } from "../dtos/shift.dto.js";
+import type { Shift, CreateShiftDto, UpdateShiftDto, ShiftQueryDto } from "../dtos/shift.dto.js";
 
 let shifts: Shift[] = [];
 let nextId = 1;
 
 export const shiftRepository = {
-    getAll(query: any): Shift[] {
+    getAll(query: ShiftQueryDto): Shift[] {
         let result = [...shifts];
 
-        // 🔍 ФІЛЬТР
         if (query.status) {
-            result = result.filter(s => s.status === query.status);
+            result = result.filter((s) => s.status === query.status);
         }
 
         if (query.userName) {
-            result = result.filter(s => s.userName === query.userName);
+            result = result.filter((s) => s.userName === query.userName);
         }
 
-        // 🔽 СОРТУВАННЯ
         if (query.sortBy) {
             result.sort((a, b) => {
+                const aValue = a[query.sortBy!];
+                const bValue = b[query.sortBy!];
+
+                if (aValue === bValue) return 0;
+
                 if (query.order === "desc") {
-                    return a[query.sortBy] < b[query.sortBy] ? 1 : -1;
+                    return aValue < bValue ? 1 : -1;
                 }
-                return a[query.sortBy] > b[query.sortBy] ? 1 : -1;
+
+                return aValue > bValue ? 1 : -1;
             });
         }
 
+        const page = query.page ? Number(query.page) : undefined;
+        const pageSize = query.pageSize ? Number(query.pageSize) : undefined;
+
+        if (page && pageSize && page > 0 && pageSize > 0) {
+            const start = (page - 1) * pageSize;
+            const end = start + pageSize;
+            result = result.slice(start, end);
+        }
+
         return result;
-    } ,
+    },
 
     getById(id: number): Shift | undefined {
         return shifts.find(s => s.id === id);

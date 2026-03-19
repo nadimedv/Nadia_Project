@@ -1,8 +1,9 @@
 import { shiftRepository } from "../repositories/shift.repository.js";
 import { ApiError } from "../errors/api-error.js";
+import type { CreateShiftDto, ShiftQueryDto, UpdateShiftDto } from "../dtos/shift.dto.js";
 
 export const shiftService = {
-    getAll(query: any) {
+    getAll(query: ShiftQueryDto) {
         return shiftRepository.getAll(query);
     },
 
@@ -14,11 +15,11 @@ export const shiftService = {
         return shift;
     },
 
-    create(dto: any) {
+    create(dto: CreateShiftDto) {
         return shiftRepository.create(dto);
     },
 
-    update(id: number, dto: any) {
+    update(id: number, dto: UpdateShiftDto) {
         const updated = shiftRepository.update(id, dto);
         if (!updated) {
             throw new ApiError(404, "SHIFT_NOT_FOUND", "Shift not found");

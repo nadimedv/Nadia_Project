@@ -4,7 +4,8 @@ import { createUserSchema, updateUserSchema } from "../schemas/user.schema.js";
 
 export const userController = {
     getAll(req: Request, res: Response) {
-        res.json(userService.getAll());
+        const items = userService.getAll();
+        res.json({ items });
     },
 
     getById(req: Request, res: Response, next: NextFunction) {

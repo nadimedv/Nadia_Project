@@ -22,3 +22,11 @@ export interface UpdateShiftDto {
     comment?: string;
     status?: string;
 }
+export interface ShiftQueryDto {
+    status?: string;
+    userName?: string;
+    sortBy?: "date" | "timeSlot" | "userName" | "status";
+    order?: "asc" | "desc";
+    page?: string;
+    pageSize?: string;
+}

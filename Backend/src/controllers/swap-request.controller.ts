@@ -4,9 +4,9 @@ import { createSwapRequestSchema, updateSwapRequestSchema } from "../schemas/swa
 
 export const swapRequestController = {
     getAll(req: Request, res: Response) {
-        res.json(swapRequestService.getAll());
+        const items = swapRequestService.getAll();
+        res.json({ items });
     },
-
     getById(req: Request, res: Response, next: NextFunction) {
         try {
             const id = Number(req.params.id);

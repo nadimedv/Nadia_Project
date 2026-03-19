@@ -4,7 +4,8 @@ import { createScheduleSchema, updateScheduleSchema } from "../schemas/schedule.
 
 export const scheduleController = {
     getAll(req: Request, res: Response) {
-        res.json(scheduleService.getAll());
+        const items = scheduleService.getAll();
+        res.json({ items });
     },
 
     getById(req: Request, res: Response, next: NextFunction) {
