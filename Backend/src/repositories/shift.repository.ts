@@ -1,79 +1,153 @@
 import type { Shift, CreateShiftDto, UpdateShiftDto, ShiftQueryDto } from "../dtos/shift.dto.js";
+import { all, get, run } from "../db/db.js";
 
-let shifts: Shift[] = [];
-let nextId = 1;
+type ShiftStatusCount = {
+    status: string;
+    total: number;
+};
+
+function escapeSqlString(value: string): string {
+    return value.replace(/'/g, "''");
+}
 
 export const shiftRepository = {
-    getAll(query: ShiftQueryDto): Shift[] {
-        let result = [...shifts];
+    async getAll(query: ShiftQueryDto): Promise<Shift[]> {
+        const conditions: string[] = [];
 
         if (query.status) {
-            result = result.filter((s) => s.status === query.status);
+            conditions.push(`status = '${escapeSqlString(query.status)}'`);
         }
 
         if (query.userName) {
-            result = result.filter((s) => s.userName === query.userName);
+            conditions.push(`userName = '${escapeSqlString(query.userName)}'`);
         }
 
-        if (query.sortBy) {
-            result.sort((a, b) => {
-                const aValue = a[query.sortBy!];
-                const bValue = b[query.sortBy!];
+        const whereSql = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-                if (aValue === bValue) return 0;
+        const allowedSortBy = ["date", "timeSlot", "userName", "status"];
+        const sortBy = query.sortBy && allowedSortBy.includes(query.sortBy)
+            ? query.sortBy
+            : "id";
 
-                if (query.order === "desc") {
-                    return aValue < bValue ? 1 : -1;
-                }
+        const order = query.order === "asc" ? "ASC" : "DESC";
 
-                return aValue > bValue ? 1 : -1;
-            });
-        }
-
+        let paginationSql = "";
         const page = query.page ? Number(query.page) : undefined;
         const pageSize = query.pageSize ? Number(query.pageSize) : undefined;
 
         if (page && pageSize && page > 0 && pageSize > 0) {
-            const start = (page - 1) * pageSize;
-            const end = start + pageSize;
-            result = result.slice(start, end);
+            const offset = (page - 1) * pageSize;
+            paginationSql = `LIMIT ${pageSize} OFFSET ${offset}`;
         }
 
-        return result;
+        return await all<Shift>(`
+            SELECT id, date, timeSlot, userName, comment, status
+            FROM Shifts
+                ${whereSql}
+            ORDER BY ${sortBy} ${order}
+                     ${paginationSql};
+        `);
     },
 
-    getById(id: number): Shift | undefined {
-        return shifts.find(s => s.id === id);
-    },
-    findDuplicate(date: string, timeSlot: string, userName: string): Shift | undefined {
-        return shifts.find(
-            (s) => s.date === date && s.timeSlot === timeSlot && s.userName === userName
-        );
-    },
-
-    create(dto: CreateShiftDto): Shift {
-        const newShift: Shift = {
-            id: nextId++,
-            ...dto
-        };
-
-        shifts.push(newShift);
-        return newShift;
+    async getById(id: number): Promise<Shift | undefined> {
+        return await get<Shift>(`
+            SELECT id, date, timeSlot, userName, comment, status
+            FROM Shifts
+            WHERE id = ${Number(id)};
+        `);
     },
 
-    update(id: number, dto: UpdateShiftDto): Shift | null {
-        const shift = shifts.find(s => s.id === id);
-        if (!shift) return null;
-
-        Object.assign(shift, dto);
-        return shift;
+    async getStatusCounts(): Promise<ShiftStatusCount[]> {
+        return await all<ShiftStatusCount>(`
+            SELECT
+                status,
+                COUNT(*) AS total
+            FROM Shifts
+            GROUP BY status
+            ORDER BY total DESC, status ASC;
+        `);
     },
 
-    delete(id: number): boolean {
-        const index = shifts.findIndex(s => s.id === id);
-        if (index === -1) return false;
+    async findDuplicate(date: string, timeSlot: string, userName: string): Promise<Shift | undefined> {
+        const safeDate = escapeSqlString(date);
+        const safeTimeSlot = escapeSqlString(timeSlot);
+        const safeUserName = escapeSqlString(userName);
 
-        shifts.splice(index, 1);
-        return true;
+        return await get<Shift>(`
+            SELECT id, date, timeSlot, userName, comment, status
+            FROM Shifts
+            WHERE date = '${safeDate}'
+              AND timeSlot = '${safeTimeSlot}'
+              AND userName = '${safeUserName}';
+        `);
+    },
+
+    async create(dto: CreateShiftDto): Promise<Shift> {
+        const safeDate = escapeSqlString(dto.date);
+        const safeTimeSlot = escapeSqlString(dto.timeSlot);
+        const safeUserName = escapeSqlString(dto.userName);
+        const safeComment = dto.comment ? escapeSqlString(dto.comment) : null;
+        const safeStatus = escapeSqlString(dto.status);
+
+        const result = await run(`
+            INSERT INTO Shifts (date, timeSlot, userName, comment, status)
+            VALUES (
+                           '${safeDate}',
+                           '${safeTimeSlot}',
+                           '${safeUserName}',
+                           ${safeComment !== null ? `'${safeComment}'` : "NULL"},
+                           '${safeStatus}'
+                   );
+        `);
+
+        const created = await get<Shift>(`
+            SELECT id, date, timeSlot, userName, comment, status
+            FROM Shifts
+            WHERE id = ${result.lastID};
+        `);
+
+        if (!created) {
+            throw new Error("Failed to fetch created shift");
+        }
+
+        return created;
+    },
+
+    async update(id: number, dto: UpdateShiftDto): Promise<Shift | null> {
+        const current = await this.getById(id);
+
+        if (!current) {
+            return null;
+        }
+
+        const nextDate = escapeSqlString(dto.date ?? current.date);
+        const nextTimeSlot = escapeSqlString(dto.timeSlot ?? current.timeSlot);
+        const nextUserName = escapeSqlString(dto.userName ?? current.userName);
+        const nextCommentRaw = dto.comment ?? current.comment ?? null;
+        const nextComment = nextCommentRaw !== null ? escapeSqlString(nextCommentRaw) : null;
+        const nextStatus = escapeSqlString(dto.status ?? current.status);
+
+        await run(`
+            UPDATE Shifts
+            SET
+                date = '${nextDate}',
+                timeSlot = '${nextTimeSlot}',
+                userName = '${nextUserName}',
+                comment = ${nextComment !== null ? `'${nextComment}'` : "NULL"},
+                status = '${nextStatus}'
+            WHERE id = ${Number(id)};
+        `);
+
+        const updated = await this.getById(id);
+        return updated ?? null;
+    },
+
+    async delete(id: number): Promise<boolean> {
+        const result = await run(`
+            DELETE FROM Shifts
+            WHERE id = ${Number(id)};
+        `);
+
+        return result.changes > 0;
     }
 };

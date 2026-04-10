@@ -1,42 +1,85 @@
-import { User, CreateUserDto, UpdateUserDto } from "../dtos/user.dto.js";
+import type { User, CreateUserDto, UpdateUserDto } from "../dtos/user.dto.js";
+import { all, get, run } from "../db/db.js";
 
-let users: User[] = [];
-let nextId = 1;
+function escapeSqlString(value: string): string {
+    return value.replace(/'/g, "''");
+}
 
 export const userRepository = {
-    getAll(): User[] {
-        return users;
+    async getAll(): Promise<User[]> {
+        return await all<User>(`
+            SELECT id, name, email
+            FROM Users
+            ORDER BY id DESC;
+        `);
     },
 
-    getById(id: number): User | undefined {
-        return users.find(u => u.id === id);
-    },
-    findByEmail(email: string) {
-        return users.find((u) => u.email === email);
-    },
-    create(dto: CreateUserDto): User {
-        const newUser: User = {
-            id: nextId++,
-            ...dto
-        };
-
-        users.push(newUser);
-        return newUser;
+    async getById(id: number): Promise<User | undefined> {
+        return await get<User>(`
+            SELECT id, name, email
+            FROM Users
+            WHERE id = ${Number(id)};
+        `);
     },
 
-    update(id: number, dto: UpdateUserDto): User | null {
-        const user = users.find(u => u.id === id);
-        if (!user) return null;
+    async findByEmail(email: string): Promise<User | undefined> {
+        const safeEmail = escapeSqlString(email);
 
-        Object.assign(user, dto);
-        return user;
+        return await get<User>(`
+            SELECT id, name, email
+            FROM Users
+            WHERE email = '${safeEmail}';
+        `);
     },
 
-    delete(id: number): boolean {
-        const index = users.findIndex(u => u.id === id);
-        if (index === -1) return false;
+    async create(dto: CreateUserDto): Promise<User> {
+        const safeName = escapeSqlString(dto.name);
+        const safeEmail = escapeSqlString(dto.email);
 
-        users.splice(index, 1);
-        return true;
+        const result = await run(`
+            INSERT INTO Users (name, email)
+            VALUES ('${safeName}', '${safeEmail}');
+        `);
+
+        const created = await get<User>(`
+            SELECT id, name, email
+            FROM Users
+            WHERE id = ${result.lastID};
+        `);
+
+        if (!created) {
+            throw new Error("Failed to fetch created user");
+        }
+
+        return created;
+    },
+
+    async update(id: number, dto: UpdateUserDto): Promise<User | null> {
+        const current = await this.getById(id);
+
+        if (!current) {
+            return null;
+        }
+
+        const nextName = escapeSqlString(dto.name ?? current.name);
+        const nextEmail = escapeSqlString(dto.email ?? current.email);
+
+        await run(`
+            UPDATE Users
+            SET name = '${nextName}', email = '${nextEmail}'
+            WHERE id = ${Number(id)};
+        `);
+
+        const updated = await this.getById(id);
+        return updated ?? null;
+    },
+
+    async delete(id: number): Promise<boolean> {
+        const result = await run(`
+            DELETE FROM Users
+            WHERE id = ${Number(id)};
+        `);
+
+        return result.changes > 0;
     }
 };

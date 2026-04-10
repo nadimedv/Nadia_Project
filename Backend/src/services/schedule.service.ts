@@ -1,33 +1,63 @@
 import { scheduleRepository } from "../repositories/schedule.repository.js";
+import { shiftRepository } from "../repositories/shift.repository.js";
 import { ApiError } from "../errors/api-error.js";
+import type { CreateScheduleDto, UpdateScheduleDto } from "../dtos/schedule.dto.js";
 
 export const scheduleService = {
-    getAll() {
-        return scheduleRepository.getAll();
+    async getAll() {
+        return await scheduleRepository.getAll();
     },
 
-    getById(id: number) {
-        const item = scheduleRepository.getById(id);
+    async getById(id: number) {
+        const item = await scheduleRepository.getById(id);
+
         if (!item) {
             throw new ApiError(404, "SCHEDULE_NOT_FOUND", "Schedule not found");
         }
+
         return item;
     },
 
-    create(dto: any) {
-        return scheduleRepository.create(dto);
+    async getWithShifts(query: Record<string, string | undefined>) {
+        return await scheduleRepository.getWithShifts(query);
     },
 
-    update(id: number, dto: any) {
-        const updated = scheduleRepository.update(id, dto);
+    async create(dto: CreateScheduleDto) {
+        const shift = await shiftRepository.getById(Number(dto.shiftId));
+
+        if (!shift) {
+            throw new ApiError(400, "SCHEDULE_SHIFT_INVALID", "Referenced shift does not exist");
+        }
+
+        return await scheduleRepository.create(dto);
+    },
+
+    async update(id: number, dto: UpdateScheduleDto) {
+        const current = await scheduleRepository.getById(id);
+
+        if (!current) {
+            throw new ApiError(404, "SCHEDULE_NOT_FOUND", "Schedule not found");
+        }
+
+        const nextShiftId = Number(dto.shiftId ?? current.shiftId);
+        const shift = await shiftRepository.getById(nextShiftId);
+
+        if (!shift) {
+            throw new ApiError(400, "SCHEDULE_SHIFT_INVALID", "Referenced shift does not exist");
+        }
+
+        const updated = await scheduleRepository.update(id, dto);
+
         if (!updated) {
             throw new ApiError(404, "SCHEDULE_NOT_FOUND", "Schedule not found");
         }
+
         return updated;
     },
 
-    delete(id: number) {
-        const success = scheduleRepository.delete(id);
+    async delete(id: number) {
+        const success = await scheduleRepository.delete(id);
+
         if (!success) {
             throw new ApiError(404, "SCHEDULE_NOT_FOUND", "Schedule not found");
         }

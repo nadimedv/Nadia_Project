@@ -5,6 +5,7 @@ import { createShiftSchema, updateShiftSchema } from "../schemas/shift.schema.js
 
 export const shiftRouter = Router();
 
+shiftRouter.get("/stats/status-counts", shiftController.getStatusCounts);
 shiftRouter.get("/", shiftController.getAll);
 shiftRouter.get("/:id", shiftController.getById);
 shiftRouter.post("/", validate(createShiftSchema), shiftController.create);

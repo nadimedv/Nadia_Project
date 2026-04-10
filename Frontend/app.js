@@ -7,8 +7,7 @@ let nextId = 1;
 const ui = {
     search: "",
     typeFilter: "",
-    sortBy: "date"
-
+    sort: "dateAsc"
 };
 
 let editingId = null; // якщо не null — ми в режимі редагування
@@ -348,27 +347,4 @@ function computeNextId(items) {
     if (items.length === 0) return 1;
     const maxId = Math.max(...items.map(x => x.id));
     return maxId + 1;
-}
-function isDuplicateShift(dto, excludeId = null) {
-    return shifts.some((shift) => { if (shift.id === excludeId) return false
-        return (
-            shift.user.toLowerCase() === dto.user.toLowerCase()&&
-        shift.type === dto.type &&
-        shift.date === dto.date &&
-        shift.timeFrom === dto.timeFrom &&
-        shift.TimeTo === dto.timeTo
-    );
-    } );
-    
-
-
-}
-function handleSortClick(sortKey) {
-    if (ui.sortBy === sortKey) {
-        ui.sortDir = ui.sortDir === "asc" ? "desc" : "asc";
-    } else {
-        ui.sortBy = sortKey;
-        ui.sortDir =  "asc" ;
-    }
-    render();
 }

@@ -3,41 +3,47 @@ import { ApiError } from "../errors/api-error.js";
 import type { CreateUserDto, UpdateUserDto } from "../dtos/user.dto.js";
 
 export const userService = {
-    getAll() {
-        return userRepository.getAll();
+    async getAll() {
+        return await userRepository.getAll();
     },
 
-    getById(id: number) {
-        const user = userRepository.getById(id);
+    async getById(id: number) {
+        const user = await userRepository.getById(id);
+
         if (!user) {
             throw new ApiError(404, "USER_NOT_FOUND", "User not found");
         }
+
         return user;
     },
 
-    create(dto: CreateUserDto) {
-        const existing = userRepository.findByEmail(dto.email);
+    async create(dto: CreateUserDto) {
+        const existing = await userRepository.findByEmail(dto.email);
+
         if (existing) {
             throw new ApiError(409, "USER_EMAIL_EXISTS", "User with this email already exists");
         }
 
-        return userRepository.create(dto);
+        return await userRepository.create(dto);
     },
 
-    update(id: number, dto: UpdateUserDto) {
-        const current = userRepository.getById(id);
+    async update(id: number, dto: UpdateUserDto) {
+        const current = await userRepository.getById(id);
+
         if (!current) {
             throw new ApiError(404, "USER_NOT_FOUND", "User not found");
         }
 
         if (dto.email && dto.email !== current.email) {
-            const existing = userRepository.findByEmail(dto.email);
+            const existing = await userRepository.findByEmail(dto.email);
+
             if (existing) {
                 throw new ApiError(409, "USER_EMAIL_EXISTS", "User with this email already exists");
             }
         }
 
-        const updated = userRepository.update(id, dto);
+        const updated = await userRepository.update(id, dto);
+
         if (!updated) {
             throw new ApiError(404, "USER_NOT_FOUND", "User not found");
         }
@@ -45,8 +51,9 @@ export const userService = {
         return updated;
     },
 
-    delete(id: number) {
-        const success = userRepository.delete(id);
+    async delete(id: number) {
+        const success = await userRepository.delete(id);
+
         if (!success) {
             throw new ApiError(404, "USER_NOT_FOUND", "User not found");
         }
