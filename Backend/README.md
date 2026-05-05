@@ -107,10 +107,3 @@ interface ApiError {
 
 ````
 
-Після заміни збережи `Ctrl + S`.
-
-Оскільки ти вже зробила `git add .`, після редагування README треба буде ще раз виконати:
-
-```powershell
-git add Backend/README.md
-````
