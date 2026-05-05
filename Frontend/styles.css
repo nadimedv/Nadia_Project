@@ -5,7 +5,6 @@ body {
     min-height: 100vh;
     font-family: 'Cormorant Garamond', serif;
     font-size: 22px;
-
     background:
             radial-gradient(circle at 20% 30%, rgba(255,255,255,0.7) 0%, transparent 40%),
             radial-gradient(circle at 70% 60%, rgba(255,255,255,0.5) 0%, transparent 35%),
@@ -14,12 +13,18 @@ body {
 }
 
 .container {
-    max-width: 980px;
+    max-width: 1180px;
     margin: 0 auto;
     padding: 16px;
 }
 
 header { margin-bottom: 16px; }
+
+code {
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #eef7f3;
+}
 
 main {
     display: flex;
@@ -29,15 +34,25 @@ main {
 
 #create-section,
 #list-section {
-    flex: 1;
     background: #fff;
-    padding: 12px;
+    padding: 14px;
     border: 1px solid #ccc;
-    border-radius: 6px;
+    border-radius: 8px;
 }
 
-@media (max-width: 800px) {
+#create-section { flex: 0 0 340px; }
+#list-section { flex: 1; overflow-x: auto; }
+
+@media (max-width: 900px) {
     main { flex-direction: column; }
+    #create-section, #list-section { width: 100%; flex: 1; }
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .field { margin-bottom: 12px; }
@@ -48,23 +63,25 @@ main {
 }
 
 .field input,
-.field select {
+.field select,
+.field textarea {
     width: 100%;
     padding: 8px;
     border: 1px solid #bbb;
     border-radius: 4px;
-
     font-family: inherit;
     font-size: 18px;
 }
 
-.invalid { border-color: #c00; }
+.field textarea { resize: vertical; }
+
+.invalid { border-color: #c00 !important; }
 
 .error-text {
     margin: 4px 0 0;
     font-size: 14px;
     color: #c00;
-    min-height: 14px;
+    min-height: 16px;
 }
 
 .buttons {
@@ -80,7 +97,11 @@ button {
     border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
+    font-size: 17px;
+    background: #f7fffb;
 }
+
+button:hover { background: #eaf8f1; }
 
 button:disabled {
     opacity: 0.6;
@@ -117,17 +138,52 @@ button:disabled {
 .hidden { display: none; }
 .muted { margin-top: 12px; opacity: 0.75; }
 
+.notice,
+.list-status,
+.details-panel {
+    margin: 12px 0;
+}
+
+.success-box,
+.error-box {
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.success-box {
+    border: 1px solid #4b8a61;
+    background: #ecfff2;
+}
+
+.error-box {
+    border: 1px solid #c45b5b;
+    background: #fff0f0;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 780px;
 }
 
 th, td {
     border: 1px solid #ccc;
     padding: 8px;
+    vertical-align: top;
 }
 
 th {
     background: #eee;
     text-align: left;
+}
+
+td:last-child {
+    min-width: 240px;
+}
+
+.details-panel {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background: #fbfffd;
 }

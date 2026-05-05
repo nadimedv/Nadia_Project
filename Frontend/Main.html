@@ -3,20 +3,25 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ЛР1 – Варіант 11 (Чергування). Мєдвєдєва</title>
+    <title>ЛР4 – Інтеграція фронтенду з бекендом. Варіант 11</title>
 
     <link rel="icon" type="image/png" href="Kitty1.png">
     <link rel="stylesheet" href="styles.css" />
-    <script src="app.js" defer></script>
+    <script type="module" src="./dist/main.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>Сервіс чергувань у лабораторії (варіант 11) </h1>
-        <p>Додайте чергування — воно з’явиться у таблиці. Можна редагувати, шукати, фільтрувати, сортувати.</p>
+        <h1>Сервіс чергувань у лабораторії</h1>
+        <p>
+            ЛР4: фронтенд працює з бекендом через HTTP API. Дані не зберігаються у localStorage,
+            а завантажуються, створюються, редагуються та видаляються через <code>/api/v1/shifts</code>.
+        </p>
     </header>
+
+    <div id="notice" class="notice"></div>
 
     <main>
         <section id="create-section">
@@ -28,23 +33,25 @@
                     <input
                             id="userInput"
                             type="text"
-                            placeholder="Напр., Іван Петренко"
+                            placeholder="Напр., Nadia"
                             required
-                            minlength="3"
+                            minlength="2"
                             maxlength="30"
                     />
                     <p class="error-text" id="userError"></p>
                 </div>
 
                 <div class="field">
-                    <label for="typeSelect">Тип чергування</label>
-                    <select id="typeSelect" required>
-                        <option value="">Оберіть тип</option>
-                        <option value="Ранкове">Ранкове</option>
-                        <option value="Денне">Денне</option>
-                        <option value="Вечірнє">Вечірнє</option>
+                    <label for="timeSlotSelect">Часовий слот</label>
+                    <select id="timeSlotSelect" required>
+                        <option value="">Оберіть слот</option>
+                        <option value="08:00-10:00">08:00-10:00</option>
+                        <option value="10:00-12:00">10:00-12:00</option>
+                        <option value="12:00-14:00">12:00-14:00</option>
+                        <option value="14:00-16:00">14:00-16:00</option>
+                        <option value="16:00-18:00">16:00-18:00</option>
                     </select>
-                    <p class="error-text" id="typeError"></p>
+                    <p class="error-text" id="timeSlotError"></p>
                 </div>
 
                 <div class="field">
@@ -54,15 +61,19 @@
                 </div>
 
                 <div class="field">
-                    <label for="timeFromInput">Час початку</label>
-                    <input id="timeFromInput" type="time" required />
-                    <p class="error-text" id="timeFromError"></p>
+                    <label for="commentInput">Коментар</label>
+                    <textarea id="commentInput" rows="4" maxlength="300" placeholder="Напр., перевірити обладнання"></textarea>
+                    <p class="error-text" id="commentError"></p>
                 </div>
 
                 <div class="field">
-                    <label for="timeToInput">Час завершення</label>
-                    <input id="timeToInput" type="time" required />
-                    <p class="error-text" id="timeToError"></p>
+                    <label for="statusSelect">Статус</label>
+                    <select id="statusSelect" required>
+                        <option value="planned">Заплановано</option>
+                        <option value="done">Виконано</option>
+                        <option value="canceled">Скасовано</option>
+                    </select>
+                    <p class="error-text" id="statusError"></p>
                 </div>
 
                 <div class="buttons">
@@ -74,50 +85,61 @@
         </section>
 
         <section id="list-section">
-            <h2>Список чергувань</h2>
+            <div class="section-header">
+                <h2>Список чергувань</h2>
+                <button type="button" id="reloadBtn">Оновити з API</button>
+            </div>
 
             <div class="toolbar">
                 <div class="tool">
-                    <label for="searchInput">Пошук (за ім’ям)</label>
-                    <input id="searchInput" type="text" placeholder="Напр., Петренко" />
+                    <label for="searchInput">Пошук / фільтр за ім’ям</label>
+                    <input id="searchInput" type="text" placeholder="Напр., Nadia" />
                 </div>
 
                 <div class="tool">
-                    <label for="typeFilterSelect">Фільтр (тип)</label>
-                    <select id="typeFilterSelect">
+                    <label for="statusFilterSelect">Фільтр за статусом</label>
+                    <select id="statusFilterSelect">
                         <option value="">Усі</option>
-                        <option value="Ранкове">Ранкове</option>
-                        <option value="Денне">Денне</option>
-                        <option value="Вечірнє">Вечірнє</option>
+                        <option value="planned">Заплановано</option>
+                        <option value="done">Виконано</option>
+                        <option value="canceled">Скасовано</option>
                     </select>
                 </div>
 
                 <div class="tool">
-                    <label for="sortSelect">Сортування</label>
+                    <label for="sortSelect">Сортування через API</label>
                     <select id="sortSelect">
-                        <option value="dateAsc">Дата/час ↑</option>
-                        <option value="dateDesc">Дата/час ↓</option>
+                        <option value="dateDesc">Дата ↓</option>
+                        <option value="dateAsc">Дата ↑</option>
                         <option value="userAsc">Користувач A→Я</option>
+                        <option value="statusAsc">Статус A→Я</option>
                     </select>
                 </div>
             </div>
+
+            <div id="listStatus" class="list-status"></div>
 
             <table id="itemsTable">
                 <thead>
                 <tr>
                     <th>#</th>
-                    <th>Користувач</th>
-                    <th>Тип</th>
                     <th>Дата</th>
-                    <th>Час</th>
+                    <th>Часовий слот</th>
+                    <th>Користувач</th>
+                    <th>Коментар</th>
+                    <th>Статус</th>
                     <th>Дії</th>
                 </tr>
                 </thead>
-                <tbody id="itemsTableBody">
-                </tbody>
+                <tbody id="itemsTableBody"></tbody>
             </table>
 
-            <p id="emptyState" class="muted hidden">Немає записів за заданими умовами.</p>
+            <p id="emptyState" class="muted hidden">Немає даних за заданими умовами.</p>
+
+            <div id="detailsPanel" class="details-panel">
+                <h3>Деталі</h3>
+                <p class="muted">Натисніть «Деталі» біля запису, щоб виконати GET /api/v1/shifts/{id}.</p>
+            </div>
         </section>
     </main>
 </div>

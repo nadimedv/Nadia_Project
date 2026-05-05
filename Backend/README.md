@@ -342,3 +342,47 @@ POST /api/swap-requests/:id/approve
 
 Операція виконується послідовно та узгоджено через транзакцію.
 
+
+
+---
+
+# Оновлення для лабораторної роботи №4
+
+API тепер має версійний префікс:
+
+```text
+/api/v1
+```
+
+Для інтеграції з фронтендом основні маршрути сутності `Shifts`:
+
+```text
+GET    /api/v1/shifts
+GET    /api/v1/shifts/:id
+POST   /api/v1/shifts
+PUT    /api/v1/shifts/:id
+DELETE /api/v1/shifts/:id
+```
+
+CORS налаштовано через whitelist origin:
+
+```text
+http://localhost:5500
+http://127.0.0.1:5500
+http://localhost:5173
+http://127.0.0.1:5173
+```
+
+Формат помилки узгоджено для фронтенду:
+
+```json
+{
+  "status": 400,
+  "code": "VALIDATION_ERROR",
+  "message": "Invalid request data",
+  "detail": [],
+  "errors": []
+}
+```
+
+Для перевірки ЛР4 frontend запускається окремо з папки `Frontend`, backend — окремо з папки `Backend`.
