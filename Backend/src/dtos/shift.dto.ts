@@ -5,6 +5,7 @@ export interface Shift {
     userName: string;
     comment?: string;
     status: string;
+    ownerUserId: number;
 }
 
 export interface CreateShiftDto {
@@ -22,6 +23,7 @@ export interface UpdateShiftDto {
     comment?: string;
     status?: string;
 }
+
 export interface ShiftQueryDto {
     status?: string;
     userName?: string;

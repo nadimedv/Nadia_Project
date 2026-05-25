@@ -1,0 +1,55 @@
+### LAB 5 — health + security headers
+GET http://localhost:3000/api/v1/health
+
+### SQLi normal search/filter for own shifts
+GET http://localhost:3000/api/v1/shifts?userName=Nadia&sortBy=date&order=desc
+X-Demo-UserId: 1
+
+### SQLi PoC after fix: payload is treated as a value, not SQL code
+GET http://localhost:3000/api/v1/shifts?userName=Nadia'%20OR%201=1%20--&sortBy=date&order=desc
+X-Demo-UserId: 1
+
+### IDOR: no demo user context -> 401
+GET http://localhost:3000/api/v1/shifts/1
+
+### IDOR: own resource -> 200
+GET http://localhost:3000/api/v1/shifts/1
+X-Demo-UserId: 1
+
+### IDOR: чужий ресурс, Olena намагається прочитати Nadia shift -> 404
+GET http://localhost:3000/api/v1/shifts/1
+X-Demo-UserId: 2
+
+### IDOR: чужий update -> 404
+PUT http://localhost:3000/api/v1/shifts/1
+Content-Type: application/json
+X-Demo-UserId: 2
+
+{
+  "comment": "Trying to update someone else's shift"
+}
+
+### XSS: створення запису з HTML/JS-подібним текстом у comment
+POST http://localhost:3000/api/v1/shifts
+Content-Type: application/json
+X-Demo-UserId: 1
+
+{
+  "date": "2026-04-22",
+  "timeSlot": "14:00-16:00",
+  "userName": "Nadia",
+  "comment": "<img src=x onerror=alert('xss')>",
+  "status": "planned"
+}
+
+### Misconfiguration: validation error returns unified 400, not stack trace
+POST http://localhost:3000/api/v1/shifts
+Content-Type: application/json
+X-Demo-UserId: 1
+
+{
+  "date": "",
+  "timeSlot": "bad-time-slot",
+  "userName": "N",
+  "status": "planned"
+}

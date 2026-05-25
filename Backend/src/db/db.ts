@@ -20,9 +20,11 @@ export const db = new sqlite3.Database(dbPath, (err) => {
     console.log("SQLite DB opened:", dbPath);
 });
 
-export function run(sql: string): Promise<{ lastID: number; changes: number }> {
+type SqlParams = unknown[] | Record<string, unknown>;
+
+export function run(sql: string, params: SqlParams = []): Promise<{ lastID: number; changes: number }> {
     return new Promise((resolve, reject) => {
-        db.run(sql, function (err) {
+        db.run(sql, params, function (err) {
             if (err) {
                 reject(err);
                 return;
@@ -36,9 +38,9 @@ export function run(sql: string): Promise<{ lastID: number; changes: number }> {
     });
 }
 
-export function get<T = unknown>(sql: string): Promise<T | undefined> {
+export function get<T = unknown>(sql: string, params: SqlParams = []): Promise<T | undefined> {
     return new Promise((resolve, reject) => {
-        db.get(sql, (err, row) => {
+        db.get(sql, params, (err, row) => {
             if (err) {
                 reject(err);
                 return;
@@ -49,9 +51,9 @@ export function get<T = unknown>(sql: string): Promise<T | undefined> {
     });
 }
 
-export function all<T = unknown>(sql: string): Promise<T[]> {
+export function all<T = unknown>(sql: string, params: SqlParams = []): Promise<T[]> {
     return new Promise((resolve, reject) => {
-        db.all(sql, (err, rows) => {
+        db.all(sql, params, (err, rows) => {
             if (err) {
                 reject(err);
                 return;

@@ -4,6 +4,7 @@ import { apiRouter } from "./routes/index.js";
 import { requestLogger } from "./middleware/request-logger.middleware.js";
 import { notFoundMiddleware } from "./middleware/not-found.middleware.js";
 import { errorHandler } from "./middleware/error-handler.middleware.js";
+import { securityHeaders } from "./middleware/security-headers.middleware.js";
 
 export const app = express();
 
@@ -24,9 +25,10 @@ const corsOptions: cors.CorsOptions = {
         callback(new Error("CORS: origin is not allowed"));
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization", "X-Demo-UserId"]
 };
 
+app.use(securityHeaders);
 app.use(cors(corsOptions));
 app.options(/.*/, cors(corsOptions));
 app.use(express.json());

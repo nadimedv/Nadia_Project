@@ -1,40 +1,158 @@
+# Nadia Project — Лабораторна робота №5
 
-# Backend для лабораторної роботи №4
+## Тема
 
-Ця папка містить серверну частину проєкту для інтеграції фронтенду з бекендом через HTTP API.
+Уразливості і захист вебзастосунків.
 
-## Основне призначення
+## Варіант
 
-Бекенд надає REST API для роботи з сутностями сервісу чергувань у лабораторії:
+Варіант 11 — сервіс чергувань у лабораторії.
 
-- Users;
-- Schedule;
-- Shifts;
-- SwapRequests.
+## Мета роботи
 
-У лабораторній роботі №4 основна інтеграція фронтенду виконується із сутністю `Shifts`.
+Метою лабораторної роботи є виявлення та відтворення типових уразливостей вебзастосунків у контрольованому навчальному середовищі, а також їх виправлення на рівні коду та конфігурації.
 
-## Версія API
+У роботі реалізовано перевірку таких сценаріїв:
 
-Усі маршрути API використовують префікс:
+1. SQL Injection.
+2. XSS.
+3. Broken Access Control / IDOR.
+4. Security Misconfiguration.
+
+Проєкт виконано на базі попередніх лабораторних робіт з використанням frontend-частини, backend-частини на TypeScript та бази даних SQLite.
+
+---
+
+## Структура проєкту
 
 ```text
-/api/v1
+Nadia_Project
+├── Backend
+│   ├── src
+│   │   ├── controllers
+│   │   ├── db
+│   │   ├── dtos
+│   │   ├── errors
+│   │   ├── middleware
+│   │   ├── migrations
+│   │   ├── repositories
+│   │   ├── routes
+│   │   ├── schemas
+│   │   ├── services
+│   │   ├── types
+│   │   ├── app.ts
+│   │   ├── config.ts
+│   │   └── server.ts
+│   ├── lab5-security-regression.http
+│   └── package.json
+│
+├── Frontend
+│   ├── src
+│   │   ├── apiClient.ts
+│   │   ├── config.ts
+│   │   ├── dtos.ts
+│   │   └── main.ts
+│   ├── Main.html
+│   ├── styles.css
+│   ├── app.js
+│   └── package.json
+│
+├── docs
+├── REPORT_LAB5.md
+└── README.md
 ````
 
-Основні маршрути для `Shifts`:
+Backend розділено на окремі файли та папки: routes, controllers, services, repositories, middleware, schemas. Це зроблено для зручності підтримки коду та зменшення ризику конфліктів, якщо декілька людей змінюють різні частини проєкту.
+
+---
+
+## Реалізовані сценарії безпеки
+
+### 1. SQL Injection
+
+Уразливість SQL Injection була розглянута на прикладі пошуку, фільтрації та сортування чергувань.
+
+Виправлення:
+
+* SQL-запити виконуються через параметризовані запити;
+* користувацькі значення не вставляються напряму в SQL-рядок;
+* для сортування використано allowlist допустимих полів.
+
+Основні файли:
 
 ```text
-GET    /api/v1/shifts
-GET    /api/v1/shifts/:id
-POST   /api/v1/shifts
-PUT    /api/v1/shifts/:id
-DELETE /api/v1/shifts/:id
+Backend/src/repositories/shift.repository.ts
+Backend/lab5-security-regression.http
 ```
 
-## Запуск бекенду
+---
 
-У терміналі потрібно перейти в папку `Backend`:
+### 2. XSS
+
+XSS-сценарій пов’язаний із відображенням даних користувача на сторінці.
+
+Виправлення:
+
+* небезпечне використання innerHTML для користувацьких даних замінено на безпечний рендеринг;
+* використовуються createElement, textContent, replaceChildren;
+* введений HTML/JS-вміст відображається як звичайний текст і не виконується браузером.
+
+Основні файли:
+
+```text
+Frontend/src/main.ts
+Frontend/app.js
+```
+
+---
+
+### 3. Broken Access Control / IDOR
+
+Для демонстрації IDOR використовується сутність чергування, яка має власника.
+
+Виправлення:
+
+* додано поле ownerUserId;
+* поточний користувач визначається через заголовок X-Demo-UserId;
+* доступ до чужих записів блокується на бекенді;
+* перевірка власника виконується для читання, редагування та видалення.
+
+Основні файли:
+
+```text
+Backend/src/middleware/demo-auth.middleware.ts
+Backend/src/repositories/shift.repository.ts
+Backend/src/services/shift.service.ts
+Backend/src/routes/shift.routes.ts
+```
+
+---
+
+### 4. Security Misconfiguration
+
+У межах мінімального hardening було налаштовано базові механізми захисту.
+
+Реалізовано:
+
+* централізовану обробку помилок;
+* єдиний формат помилок;
+* приховування dev-деталей у production;
+* базові security headers;
+* обмежений CORS.
+
+Основні файли:
+
+```text
+Backend/src/middleware/security-headers.middleware.ts
+Backend/src/middleware/error-handler.middleware.ts
+Backend/src/app.ts
+```
+
+---
+
+## Запуск backend
+
+Перейти в папку Backend:
 
 ```bash
 cd Backend
@@ -46,7 +164,7 @@ cd Backend
 npm install
 ```
 
-Виконати міграції бази даних:
+Запустити міграції:
 
 ```bash
 npm run migrate
@@ -58,52 +176,173 @@ npm run migrate
 npm run seed
 ```
 
-Запустити сервер у режимі розробки:
+Запустити backend:
 
 ```bash
 npm run dev
 ```
 
-Після запуску API доступний за адресою:
+Backend працює за адресою:
 
 ```text
 http://localhost:3000
 ```
 
-Приклад перевірки:
+---
 
-```text
-http://localhost:3000/api/v1/shifts
+## Запуск frontend
+
+У другому терміналі перейти в папку Frontend:
+
+```bash
+cd Frontend
 ```
 
-## CORS
+Встановити залежності:
 
-Для роботи фронтенду в браузері налаштовано CORS із конкретними дозволеними origin, зокрема:
+```bash
+npm install
+```
+
+Запустити frontend:
+
+```bash
+npm run dev
+```
+
+Frontend працює за адресою:
 
 ```text
 http://localhost:5500
-http://127.0.0.1:5500
-http://localhost:5173
-http://127.0.0.1:5173
 ```
 
-Це дозволяє фронтенду запускатися окремо від бекенду та виконувати запити через `fetch()`.
+---
 
-## Помилки
+## Перевірка сценаріїв безпеки
 
-Бекенд повертає помилки в узгодженому форматі:
+Для перевірки сценаріїв лабораторної роботи використовується файл:
 
-```ts
-interface ApiError {
-  status: number;
-  code: string;
-  message: string;
-  detail?: string;
-  errors?: Record<string, string[]>;
-}
+```text
+Backend/lab5-security-regression.http
 ```
 
-Цей формат обробляється фронтендом через окремий модуль `apiClient`.
+У ньому підготовлені HTTP-запити для перевірки:
 
-````
+* SQL Injection;
+* IDOR;
+* XSS;
+* security headers;
+* коректної обробки помилок.
+
+Файл можна запускати через вбудований HTTP Client у WebStorm.
+
+---
+
+## Приклади очікуваної поведінки
+
+### Відсутній користувач
+
+Якщо запит до захищеного endpoint виконується без заголовка:
+
+```text
+X-Demo-UserId
+```
+
+сервер повертає:
+
+```text
+401 Unauthorized
+```
+
+### Доступ до чужого ресурсу
+
+Якщо користувач намагається отримати чуже чергування, сервер повертає:
+
+```text
+404 Not Found
+```
+
+Такий підхід не розкриває, чи існує ресурс насправді.
+
+### SQL Injection
+
+Підозрілий ввід не змінює структуру SQL-запиту, тому не повертає зайві дані та не ламає роботу сервера.
+
+### XSS
+
+Введений HTML/JS-вміст відображається як текст і не виконується браузером.
+
+---
+
+## Основні команди
+
+Backend:
+
+```bash
+cd Backend
+npm install
+npm run migrate
+npm run seed
+npm run dev
+```
+
+Frontend:
+
+```bash
+cd Frontend
+npm install
+npm run dev
+```
+
+Build backend:
+
+```bash
+cd Backend
+npm run build
+```
+
+Build frontend:
+
+```bash
+cd Frontend
+npm run build
+```
+
+---
+
+## Звіт
+
+Короткий звіт до лабораторної роботи знаходиться у файлі:
+
+```text
+REPORT_LAB5.md
+```
+
+У звіті описано кожний сценарій за структурою:
+
+```text
+було → відтворення → виправлення → перевірка
+```
+
+Також наведено таблицю:
+
+```text
+ризик → наслідок → виправлення
+```
+
+---
+
+## Репозиторій
+
+Код лабораторної роботи розміщується у репозиторії:
+
+```text
+https://github.com/nadimedv/Nadia_Project
+```
+
+Фінальна версія лабораторної роботи має бути позначена тегом:
+
+```text
+5.0.0
+```
 

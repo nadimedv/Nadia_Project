@@ -29,12 +29,7 @@ function sendError(
     });
 }
 
-export function errorHandler(
-    err: unknown,
-    req: Request,
-    res: Response,
-    next: NextFunction
-): void {
+export function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction): void {
     if (err instanceof ApiError) {
         sendError(res, err.status, err.code, err.message, err.details);
         return;
@@ -46,11 +41,14 @@ export function errorHandler(
             message: issue.message
         }));
 
-        sendError(res, 400, "VALIDATION_ERROR", "Invalid request data", errors, errors);
+        sendError(res, 400, "VALIDATION_ERROR", "Invalid request data", null, errors);
         return;
     }
 
     console.error("Unhandled error:", err);
 
-    sendError(res, 500, "INTERNAL_SERVER_ERROR", "Unexpected server error", null);
+    const isDev = process.env.NODE_ENV !== "production";
+    const details = isDev && err instanceof Error ? err.message : null;
+
+    sendError(res, 500, "INTERNAL_SERVER_ERROR", "Internal Server Error", details);
 }
